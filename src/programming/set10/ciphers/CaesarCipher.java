@@ -8,17 +8,28 @@ public class CaesarCipher {
     public CaesarCipher(CryptMode cryptMode, int key) {
         this.cryptMode = cryptMode;
         this.key = key;
-
-
     }
 
+    /**
+     * @return the positive offset between 0 and 25.
+     */
     private int getOffset() {
+        // fix keys > 26
+        int offset = key % 26;
         if (cryptMode == CryptMode.DECRYPT) {
-            return key*-1;
+            offset *= -1;
         }
-        return key;
+        // an offset of -3 is the same as 23
+        if (Math.signum(offset) == -1.0) {
+            return 26 + offset;
+        }
+        return offset;
     }
 
+    /**
+     * @param character char to be encoded
+     * @return encoded version of char according to this instances encoding settings
+     */
     private char encodeChar(char character) {
         int offset = this.getOffset();
 
@@ -28,12 +39,9 @@ public class CaesarCipher {
 
         char encodedChar = (char) (character + offset);
 
-        if ((Character.isLowerCase(character) && (encodedChar > 'z' || encodedChar < 'a'))
-                || (Character.isUpperCase(character) && (encodedChar > 'Z' || encodedChar < 'A'))) {
-            // Multiply 26 with the signum of offset to walk forward if offset is negative,
-            // while we walk backwards if offset is negative
-            int correctedOffset = -(26*(int)Math.signum(offset) - offset);
-            return (char) (character + correctedOffset);
+        if ((Character.isLowerCase(character) && (encodedChar > 'z'))
+                || (Character.isUpperCase(character) && (encodedChar > 'Z'))) {
+            return (char) (character - (26 - offset));
         }
         return encodedChar;
     }
